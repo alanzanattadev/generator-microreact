@@ -1,0 +1,23 @@
+{
+  "name": "generator-react",
+  "version": "1.0.0",
+  "description": "generator of react app and parts for yeoman",
+  "main": "index.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "keywords": [
+    "react",
+    "generator",
+    "yeoman",
+    "yeoman-generator",
+    "flux",
+    "web"
+  ],
+  "author": "Alan Zanatta",
+  "license": "BSD",
+  "dependencies": {
+    "yeoman-generator": "~0.20.1",
+    "cross-spawn": "~0.4.1"
+  }
+}
