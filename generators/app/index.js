@@ -129,7 +129,9 @@ module.exports = generators.Base.extend({
     fs.mkdirSync(this.destinationPath("./lib/dispatchers"));
     this.fs.copyTpl(this.templatePath("dispatcher.js"), this.destinationPath("./lib/dispatchers/dispatcher.js"));
     fs.mkdirSync(this.destinationPath("./lib/stores"));
-    // create web folders
+    // create web folders and files
+    this.fs.copyTpl(this.templatePath("index.html"), this.destinationPath("./lib/index.html"));
+    this.fs.copyTpl(this.templatePath("index.jsx"), this.destinationPath("./lib/index.jsx"));
     fs.mkdirSync(this.destinationPath("./lib/styles"));
     // create spec folder
     fs.mkdirSync(this.destinationPath("./specs"));
