@@ -16,3 +16,5 @@ var <%= component.name %> = React.createClass({
     );
   }
 });
+
+module.exports = <%= component.name %>;
