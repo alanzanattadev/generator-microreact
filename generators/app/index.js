@@ -133,6 +133,7 @@ module.exports = generators.Base.extend({
     this.fs.copyTpl(this.templatePath("index.html"), this.destinationPath("./lib/index.html"));
     this.fs.copyTpl(this.templatePath("index.jsx"), this.destinationPath("./lib/index.jsx"));
     fs.mkdirSync(this.destinationPath("./lib/styles"));
+    this.fs.copyTpl(this.templatePath("style.scss"), this.destinationPath("./lib/styles/style.scss"));
     // create spec folder
     fs.mkdirSync(this.destinationPath("./specs"));
     fs.mkdirSync(this.destinationPath("./specs/unit"));
