@@ -22,9 +22,9 @@ var flow = require('gulp-flowtype');
 // -----------------------
 
 var paths = {
-  html: 'libs/*.html',
-  style: 'libs/styles/*.scss',
-  entry: 'libs/index.js',
+  html: 'lib/*.html',
+  style: 'lib/styles/*.scss',
+  entry: 'lib/index.jsx',
   bundle: 'bundle.js',
   build: './dist'
 };
