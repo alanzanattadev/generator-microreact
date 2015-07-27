@@ -1,5 +1,5 @@
 {
-  "name": "generator-react",
+  "name": "generator-microreact",
   "version": "1.0.0",
   "description": "generator of react app and parts for yeoman",
   "main": "index.js",

@@ -74,10 +74,6 @@ module.exports = generators.Base.extend({
       "react"
     ];
     this.toInstallDev = [
-      "browser-sync",
-      "browserify",
-      "karma",
-      "lodash.assign",
       "gulp",
       "gulp-flowtype",
       "gulp-karma",
@@ -89,13 +85,23 @@ module.exports = generators.Base.extend({
       "gulp-sourcemaps",
       "gulp-uglify",
       "gulp-util",
-      "mocha",
+      "gulp-babel",
+      "gulp-task-listing",
+      "karma-mocha",
+      "karma-chrome-launcher",
+      "karma-browserify",
+      "karma",
       "reactify",
-      "should",
+      "watchify",
+      "babelify",
+      "browserify",
       "uglify",
+      "browser-sync",
+      "lodash.assign",
+      "mocha",
+      "should",
       "vinyl-buffer",
-      "vinyl-source-stream",
-      "watchify"
+      "vinyl-source-stream"
     ];
     if (this.answers.repo != "")
       this.repo = this.answers.repo;
@@ -144,6 +150,8 @@ module.exports = generators.Base.extend({
     fs.mkdirSync(this.destinationPath("./dist"));
     // write gulpfile.js
     this.fs.copyTpl(this.templatePath("gulpfile.js"), this.destinationPath("./gulpfile.js"));
+    this.fs.copyTpl(this.templatePath("karma.conf.js"), this.destinationPath("./karma.conf.js"));
+    this.fs.copyTpl(this.templatePath("flowconfig"), this.destinationPath("./.flowconfig"));
     // if repo : git remote add origin ...
     if (this.repo)
       spawn.sync('git', ['remote', 'add', 'origin', this.repo]);
