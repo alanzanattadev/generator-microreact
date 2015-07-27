@@ -38,6 +38,29 @@ module.exports = generators.Base.extend({
         'Yes',
         'No'
       ]
+    }, {
+      type    : 'list',
+      name    : 'apptype',
+      message : 'What type of app is it',
+      choices : [
+        'Web',
+        'Cordova'
+      ]
+    }, {
+      type    : 'list',
+      name    : 'bower',
+      message : 'Will you use Bower ?',
+      choices : [
+        'Yes',
+        'No'
+      ]
+    }, {
+      type    : 'checkbox',
+      name    : 'frameworks',
+      message : 'What frameworks will you use ?',
+      choices : [
+        'react-bootstrap'
+      ]
     }], function (answers) {
       this.answers = answers;
       done();
@@ -53,8 +76,8 @@ module.exports = generators.Base.extend({
       license: "ISC",
       keywords: [
         "react",
-        this.author,
-        "web"
+        "web",
+        this.answers.author
       ],
       repository: {
         type: "git",
@@ -72,6 +95,12 @@ module.exports = generators.Base.extend({
       "flux",
       "object-assign",
       "react"
+    ];
+    this.toBowerInstall = [
+
+    ];
+    this.toBowerInstallDev = [
+
     ];
     this.toInstallDev = [
       "gulp",
@@ -103,6 +132,24 @@ module.exports = generators.Base.extend({
       "vinyl-buffer",
       "vinyl-source-stream"
     ];
+    this.toInstall.push('react-router');
+    if (this.answers.frameworks.indexOf('react-bootstrap') != -1) {
+      this.toInstall.push('react-bootstrap');
+      if (this.answers.bower == 'Yes')
+        this.toBowerInstall.push('bootstrap');
+      else
+        this.toInstall.push('bootstrap');
+    }
+    if (this.answers.bower == 'Yes') {
+      this.toInstall.push('bower');
+      this.bowerJson = {
+        name: this.answers.name,
+        description: this.answers.description,
+        version: "0.1.0",
+        authors: this.answers.author,
+        license: "ISC"
+      }
+    }
     if (this.answers.repo != "")
       this.repo = this.answers.repo;
   },
@@ -132,6 +179,7 @@ module.exports = generators.Base.extend({
     // create flux folders
     fs.mkdirSync(this.destinationPath("./lib/actions"));
     fs.mkdirSync(this.destinationPath("./lib/components"));
+    this.fs.copyTpl(this.templatePath("App.jsx"), this.destinationPath("./lib/components/App.jsx"));
     fs.mkdirSync(this.destinationPath("./lib/dispatchers"));
     this.fs.copyTpl(this.templatePath("dispatcher.js"), this.destinationPath("./lib/dispatchers/dispatcher.js"));
     fs.mkdirSync(this.destinationPath("./lib/stores"));
@@ -152,6 +200,10 @@ module.exports = generators.Base.extend({
     this.fs.copyTpl(this.templatePath("gulpfile.js"), this.destinationPath("./gulpfile.js"));
     this.fs.copyTpl(this.templatePath("karma.conf.js"), this.destinationPath("./karma.conf.js"));
     this.fs.copyTpl(this.templatePath("flowconfig"), this.destinationPath("./.flowconfig"));
+    if (this.answers.bower == 'Yes') {
+      this.fs.copyTpl(this.templatePath("bowerrc"), this.destinationPath("./.bowerrc"));
+      this.fs.writeJSON("./bower.json", this.bowerJson);
+    }
     // if repo : git remote add origin ...
     if (this.repo)
       spawn.sync('git', ['remote', 'add', 'origin', this.repo]);
@@ -166,6 +218,10 @@ module.exports = generators.Base.extend({
     // install npm dependencies
     if (this.toInstall)
       this.npmInstall(this.toInstall, {'save': true});
+    if (this.answers.bower == 'Yes') {
+      this.bowerInstall(this.toBowerInstall, {'save': true});
+      this.bowerInstall(this.toBowerInstallDev, {'saveDev': true});
+    }
   },
   end: function() {
     // if repo : git add / git commit / git push
