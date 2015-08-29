@@ -1,7 +1,11 @@
-var React = require('react');
+import React from 'react';
+import classNames from 'classnames';
 
 var <%= component.name %> = React.createClass({
   getInitialState: function() {
+    return {};
+  },
+  getDefaultProps: function() {
     return {};
   },
   componentDidMount: function() {
@@ -17,4 +21,4 @@ var <%= component.name %> = React.createClass({
   }
 });
 
-module.exports = <%= component.name %>;
+export default <%= component.name %>;

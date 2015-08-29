@@ -1,12 +1,13 @@
-var React = require('react');
-var Router = require('react-router');
-var RouteHandler = Router.RouteHandler;
+import React from 'react';
+import Router, {RouteHandler} from 'react-router';
 
 var App = React.createClass({
   getInitialState: function() {
     return {};
   },
-
+  getDefaultProps: function() {
+    return {};
+  },
   componentDidMount: function() {
 
   },
@@ -22,4 +23,4 @@ var App = React.createClass({
   }
 });
 
-module.exports = App;
+export default App;

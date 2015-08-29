@@ -3,72 +3,114 @@ var fs = require('fs');
 var spawn = require('cross-spawn');
 
 module.exports = generators.Base.extend({
-  // The name `constructor` is important here
-  constructor: function () {
-    // Calling the super constructor is important so our generator is correctly set up
-    generators.Base.apply(this, arguments);
+  _getQuestions: function() {
+    return [
+      {
+        type    : 'input',
+        name    : 'name',
+        message : 'Your project name',
+        default : this.appname // Default to current folder name
+      }, {
+        type    : 'input',
+        name    : 'description',
+        message : 'Your project description'
+      }, {
+        type    : 'input',
+        name    : 'author',
+        message : 'Your project author'
+      }, {
+        type    : 'input',
+        name    : 'repository',
+        message : 'Your project repository'
+      }, {
+        type    : 'confirm',
+        name    : 'basebranch',
+        message : 'Do you want the base commits in another branch ?',
+        default : false
+      }, {
+        type    : 'list',
+        name    : 'type',
+        message : 'What type of app is it',
+        choices : [
+          'Web',
+          'Cordova'
+        ]
+      }, {
+        type    : 'confirm',
+        name    : 'bower',
+        message : 'Will you use Bower ?',
+        default : true
+      }, {
+        type    : 'checkbox',
+        name    : 'frameworks',
+        message : 'What frameworks will you use ?',
+        choices : [
+          'react-bootstrap'
+        ]
+      }
+    ];
   },
-  initializing: function() {
 
+  _getNpmDefaultPackages: function() {
+    return {
+      prod: [
+        "flux",
+        "object-assign",
+        "react",
+        "react-router",
+        "classnames"
+      ],
+      dev: [
+        "gulp",
+        "gulp-flowtype",
+        "gulp-karma",
+        "gulp-minify-css",
+        "gulp-minify-html",
+        "gulp-concat",
+        "gulp-mocha",
+        "gulp-react",
+        "gulp-sass",
+        "gulp-sourcemaps",
+        "gulp-uglify",
+        "gulp-util",
+        "gulp-babel",
+        "gulp-task-listing",
+        "karma-mocha",
+        "karma-chrome-launcher",
+        "karma-browserify",
+        "karma",
+        "reactify",
+        "watchify",
+        "babelify",
+        "browserify",
+        "uglify",
+        "browser-sync",
+        "lodash.assign",
+        "mocha",
+        "should",
+        "vinyl-buffer",
+        "vinyl-source-stream"
+      ]
+    };
   },
-  prompting: function () {
-    var done = this.async();
-    this.prompt([{
-      type    : 'input',
-      name    : 'name',
-      message : 'Your project name',
-      default : this.appname // Default to current folder name
-    }, {
-      type    : 'input',
-      name    : 'description',
-      message : 'Your project description'
-    }, {
-      type    : 'input',
-      name    : 'author',
-      message : 'Your project author'
-    }, {
-      type    : 'input',
-      name    : 'repo',
-      message : 'Your project repository'
-    }, {
-      type    : 'list',
-      name    : 'basebranch',
-      message : 'Do you want the base commits in another branch ?',
-      choices : [
-        'Yes',
-        'No'
-      ]
-    }, {
-      type    : 'list',
-      name    : 'apptype',
-      message : 'What type of app is it',
-      choices : [
-        'Web',
-        'Cordova'
-      ]
-    }, {
-      type    : 'list',
-      name    : 'bower',
-      message : 'Will you use Bower ?',
-      choices : [
-        'Yes',
-        'No'
-      ]
-    }, {
-      type    : 'checkbox',
-      name    : 'frameworks',
-      message : 'What frameworks will you use ?',
-      choices : [
-        'react-bootstrap'
-      ]
-    }], function (answers) {
-      this.answers = answers;
-      done();
-    }.bind(this));
+  _getNpmPackages: function() {
+    var packages = this._getNpmDefaultPackages();
+    // Bower
+    if (this.answers.bower == 'Yes') {
+      packages.prod.push('bower');
+    }
+    // Bootstrap
+    packages.prod.push('react-bootstrap');
+    if (this.answers.frameworks.indexOf('react-bootstrap') != -1 &&
+        !this.this.answers.bower)
+      packages.prod.push('bootstrap');
+    // Server Side (Web)
+    packages.prod.push('express');
+    packages.prod.push('jade');
+    return packages;
   },
-  configuring: function() {
-    // prepare package.json
-    var packageJson = {
+  _getNpmConfig: function() {
+    return {
       name: this.answers.name,
       description: this.answers.description,
       author: this.answers.author,
@@ -89,106 +131,110 @@ module.exports = generators.Base.extend({
         start: 'gulp watch'
       }
     };
-    this.packageJson = packageJson;
-    // prepare packages to install
-    this.toInstall = [
-      "flux",
-      "object-assign",
-      "react"
-    ];
-    this.toBowerInstall = [
-
-    ];
-    this.toBowerInstallDev = [
-
-    ];
-    this.toInstallDev = [
-      "gulp",
-      "gulp-flowtype",
-      "gulp-karma",
-      "gulp-minify-css",
-      "gulp-minify-html",
-      "gulp-mocha",
-      "gulp-react",
-      "gulp-sass",
-      "gulp-sourcemaps",
-      "gulp-uglify",
-      "gulp-util",
-      "gulp-babel",
-      "gulp-task-listing",
-      "karma-mocha",
-      "karma-chrome-launcher",
-      "karma-browserify",
-      "karma",
-      "reactify",
-      "watchify",
-      "babelify",
-      "browserify",
-      "uglify",
-      "browser-sync",
-      "lodash.assign",
-      "mocha",
-      "should",
-      "vinyl-buffer",
-      "vinyl-source-stream"
-    ];
-    this.toInstall.push('react-router');
-    if (this.answers.frameworks.indexOf('react-bootstrap') != -1) {
-      this.toInstall.push('react-bootstrap');
-      if (this.answers.bower == 'Yes')
-        this.toBowerInstall.push('bootstrap');
-      else
-        this.toInstall.push('bootstrap');
-    }
-    if (this.answers.bower == 'Yes') {
-      this.toInstall.push('bower');
-      this.bowerJson = {
-        name: this.answers.name,
-        description: this.answers.description,
-        version: "0.1.0",
-        authors: this.answers.author,
-        license: "ISC"
-      }
-    }
-    if (this.answers.repo != "")
-      this.repo = this.answers.repo;
   },
-  default: function() {
-
+  _initNpm: function() {
+    this.fs.writeJSON("./package.json", this._getNpmConfig());
   },
-  writing: function() {
-    // init git
-    spawn.sync('git', ['init']);
-    spawn.sync('git', ['commit', '--allow-empty', '-m', 'initial commit']);
-    // write .gitignore
-    this.fs.copyTpl(this.templatePath("gitignore"), this.destinationPath("./.gitignore"));
-    // write yeoman rc
-    this.config.save();
-    // write README.md
-    this.fs.copyTpl(this.templatePath("README.md"), this.destinationPath("README.md"), {
+
+  _getBowerDefaultPackages: function() {
+    return {
+      prod: [
+
+      ],
+      dev: [
+
+      ]
+    };
+  },
+  _getBowerPackages: function() {
+    var packages = this._getBowerDefaultPackages();
+    //Bootstrap
+    if (this.answers.frameworks.indexOf('react-bootstrap') != -1 &&
+        this.this.answers.bower)
+      packages.prod.push('bootstrap');
+    return packages;
+  },
+  _getBowerConfig: function() {
+    return {
+      name: this.answers.name,
+      description: this.answers.description,
+      version: "0.1.0",
+      authors: this.answers.author,
+      license: "ISC"
+    };
+  },
+  _initBower: function() {
+    this.fs.copyTpl(this.templatePath(this.answers.type.toLowerCase() + "/" + "bowerrc"), this.destinationPath("./.bowerrc"));
+    this.fs.writeJSON("./bower.json", this._getBowerConfig());
+  },
+
+  _getReadMeConfig: function() {
+    return {
       project: {
         name: this.answers.name,
         description: this.answers.description,
         author: this.answers.author
       }
-    });
-    // write package.json
-    this.fs.writeJSON("./package.json", this.packageJson);
+    };
+  },
+  _initReadMe: function() {
+    this.fs.copyTpl(this.templatePath("README.md"), this.destinationPath("README.md"), this._getReadMeConfig());
+  },
+
+  _initYeoman: function() {
+    this.config.save();
+  },
+
+  _initGit: function() {
+    spawn.sync('git', ['init']);
+    spawn.sync('git', ['commit', '--allow-empty', '-m', 'initial commit']);
+    this.fs.copyTpl(this.templatePath(this.answers.type.toLowerCase() + "/" + "gitignore"), this.destinationPath("./.gitignore"));
+    if (this.answers.repository != "")
+      spawn.sync('git', ['remote', 'add', 'origin', this.answers.repository]);
+  },
+  _makeCommits: function() {
+    if (this.git) {
+      if (this.answers.basebranch) {
+        spawn.sync('git', ['checkout', '-b', 'base-project']);
+      }
+      spawn.sync('git', ['add', '.gitignore']);
+      spawn.sync('git', ['commit', '-m', '.gitignore']);
+      spawn.sync('git', ['add', '.']);
+      spawn.sync('git', ['commit', '-m', 'base project']);
+      if (this.answers.basebranch) {
+        spawn.sync('git', ['checkout', 'master']);
+        spawn.sync('git', ['merge', 'base-project', '--no-ff']);
+      }
+      if (this.answers.repository)
+        spawn.sync('git', ['push', 'origin', 'master']);
+    }
+  },
+
+  _initGulp: function() {
+    this.fs.copyTpl(this.templatePath(this.answers.type.toLowerCase() + "/" + "gulpfile.js"), this.destinationPath("./gulpfile.js"));
+  },
+
+  _initKarma: function() {
+    this.fs.copyTpl(this.templatePath("karma.conf.js"), this.destinationPath("./karma.conf.js"));
+  },
+
+  _initFlow: function() {
+    this.fs.copyTpl(this.templatePath("flowconfig"), this.destinationPath("./.flowconfig"));
+  },
+
+  _makeCommonFolders: function() {
     // create lib folder
     fs.mkdirSync(this.destinationPath("./lib"));
     // create flux folders
     fs.mkdirSync(this.destinationPath("./lib/actions"));
     fs.mkdirSync(this.destinationPath("./lib/components"));
-    this.fs.copyTpl(this.templatePath("App.jsx"), this.destinationPath("./lib/components/App.jsx"));
     fs.mkdirSync(this.destinationPath("./lib/dispatchers"));
-    this.fs.copyTpl(this.templatePath("dispatcher.js"), this.destinationPath("./lib/dispatchers/dispatcher.js"));
     fs.mkdirSync(this.destinationPath("./lib/stores"));
-    // create web folders and files
-    this.fs.copyTpl(this.templatePath("index.html"), this.destinationPath("./lib/index.html"));
-    this.fs.copyTpl(this.templatePath("index.jsx"), this.destinationPath("./lib/index.jsx"));
+    fs.mkdirSync(this.destinationPath("./lib/routes"));
+    // create content folders
+    fs.mkdirSync(this.destinationPath("./lib/assets"));
     fs.mkdirSync(this.destinationPath("./lib/styles"));
-    this.fs.copyTpl(this.templatePath("style.scss"), this.destinationPath("./lib/styles/style.scss"));
-    // create spec folder
+    // create specs folders
     fs.mkdirSync(this.destinationPath("./specs"));
     fs.mkdirSync(this.destinationPath("./specs/unit"));
     fs.mkdirSync(this.destinationPath("./specs/e2e"));
@@ -196,49 +242,84 @@ module.exports = generators.Base.extend({
     fs.mkdirSync(this.destinationPath("./configs"));
     // create dist folder
     fs.mkdirSync(this.destinationPath("./dist"));
-    // write gulpfile.js
-    this.fs.copyTpl(this.templatePath("gulpfile.js"), this.destinationPath("./gulpfile.js"));
-    this.fs.copyTpl(this.templatePath("karma.conf.js"), this.destinationPath("./karma.conf.js"));
-    this.fs.copyTpl(this.templatePath("flowconfig"), this.destinationPath("./.flowconfig"));
-    if (this.answers.bower == 'Yes') {
-      this.fs.copyTpl(this.templatePath("bowerrc"), this.destinationPath("./.bowerrc"));
-      this.fs.writeJSON("./bower.json", this.bowerJson);
-    }
-    // if repo : git remote add origin ...
-    if (this.repo)
-      spawn.sync('git', ['remote', 'add', 'origin', this.repo]);
+  },
+
+  _writeFlux: function() {
+    this.fs.copyTpl(this.templatePath("App.jsx"), this.destinationPath("./lib/components/App.jsx"));
+    this.fs.copyTpl(this.templatePath("dispatchers/dispatcher.js"), this.destinationPath("./lib/dispatchers/dispatcher.js"));
+    this.fs.copyTpl(this.templatePath(this.answers.type.toLowerCase() + "/" + "index.jsx"), this.destinationPath("./lib/index.jsx"));
+    this.fs.copyTpl(this.templatePath("routes/index.jsx"), this.destinationPath("./lib/routes/index.jsx"));
+  },
+
+  _writeStyles: function() {
+    this.fs.copyTpl(this.templatePath("style.scss"), this.destinationPath("./lib/styles/style.scss"));
+  },
+
+  _writeWebSpecific: function() {
+    fs.mkdirSync(this.destinationPath("./lib/server"));
+    fs.mkdirSync(this.destinationPath("./lib/views"));
+    this.fs.copyTpl(this.templatePath("web/views/index.jade"), this.destinationPath("./lib/views/index.jade"));
+    this.fs.copyTpl(this.templatePath("web/server/index.jsx"), this.destinationPath("./lib/server/index.js"));
+  },
+
+  _writeCordovaSpecific: function() {
+    this.fs.copyTpl(this.templatePath("cordova/index.html"), this.destinationPath("./lib/index.html"));
+  },
+
+  // The name `constructor` is important here
+  constructor: function () {
+    // Calling the super constructor is important so our generator is correctly set up
+    generators.Base.apply(this, arguments);
+  },
+  initializing: function() {
+
+  },
+  prompting: function () {
+    var done = this.async();
+    this.prompt(this._getQuestions(), function (answers) {
+      this.answers = answers;
+      done();
+    }.bind(this));
+  },
+  configuring: function() {
+
+  },
+  default: function() {
+
+  },
+  writing: function() {
+    this._initGit();
+    this._initNpm();
+    if (this.answers.bower)
+      this._initBower();
+    this._makeCommonFolders();
+    this._initGulp();
+    this._initKarma();
+    this._initFlow();
+    this._initReadMe();
+    this._initYeoman();
+    this._writeFlux();
+    this._writeStyles();
+    if (this.answers.type == "Web")
+      this._writeWebSpecific();
+    else if (this.answers.type == "Cordova")
+      this._writeCordovaSpecific();
+    this._makeCommits();
   },
   conflicts: function() {
 
   },
   install: function() {
-    // install npm devDependencies
-    if (this.toInstallDev)
-      this.npmInstall(this.toInstallDev, {'saveDev': true});
-    // install npm dependencies
-    if (this.toInstall)
-      this.npmInstall(this.toInstall, {'save': true});
-    if (this.answers.bower == 'Yes') {
-      this.bowerInstall(this.toBowerInstall, {'save': true});
-      this.bowerInstall(this.toBowerInstallDev, {'saveDev': true});
+    var npmPackages = this._getNpmPackages();
+    this.npmInstall(npmPackages.prod, {'save': true});
+    this.npmInstall(npmPackages.dev, {'saveDev': true});
+    if (this.answers.bower) {
+      var bowerPackages = this._getBowerPackages();
+      this.bowerInstall(bowerPackages.prod, {'save': true});
+      this.bowerInstall(bowerPackages.dev, {'saveDev': true});
     }
   },
   end: function() {
-    // if repo : git add / git commit / git push
-    if (this.git) {
-      if (this.answers.basebranch == 'Yes') {
-        spawn.sync('git', ['checkout', '-b', 'base-project']);
-      }
-      spawn.sync('git', ['add', '.gitignore']);
-      spawn.sync('git', ['commit', '-m', '.gitignore']);
-      spawn.sync('git', ['add', '.']);
-      spawn.sync('git', ['commit', '-m', 'base project']);
-      if (this.answers.basebranch == 'Yes') {
-        spawn.sync('git', ['checkout', 'master']);
-        spawn.sync('git', ['merge', 'base-project', '--no-ff']);
-      }
-      if (this.repo)
-        spawn.sync('git', ['push', 'origin', 'master']);
-    }
+
   }
 });
