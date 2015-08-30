@@ -17,6 +17,11 @@ module.exports = generators.Base.extend({
       message : 'Your component name',
     }, {
       type    : 'input',
+      name    : 'filepath',
+      message : 'Your file path',
+      default : ""
+    }, {
+      type    : 'input',
       name    : 'filename',
       message : 'Your file name',
       default : function(answers) {
@@ -35,7 +40,7 @@ module.exports = generators.Base.extend({
   },
   writing: function() {
     // write .gitignore
-    this.fs.copyTpl(this.templatePath("component.jsx"), this.destinationPath("./lib/components/" + this.answers.filename), {
+    this.fs.copyTpl(this.templatePath("component.jsx"), this.destinationPath("./lib/components/" + this.answers.filepath + this.answers.filename), {
       component: {
         name: this.answers.name
       }
