@@ -36,6 +36,16 @@ module.exports = generators.Base.extend({
           'Cordova'
         ]
       }, {
+        type    : 'input',
+        name    : 'cordovaPackage',
+        message : 'Your cordova package name',
+        when    : function(answers) {return answers.type == 'Cordova';}
+      }, {
+        type    : 'input',
+        name    : 'cordovaDisplayText',
+        message : 'Your cordova display name',
+        when    : function(answers) {return answers.type == 'Cordova';}
+      }, {
         type    : 'confirm',
         name    : 'bower',
         message : 'Will you use Bower ?',
@@ -105,9 +115,15 @@ module.exports = generators.Base.extend({
         !this.this.answers.bower)
       packages.prod.push('bootstrap');
     // Server Side (Web)
-    packages.prod.push('express');
-    packages.prod.push('jade');
+    if (this.answers.type == "Web") {
+      packages.prod.push('express');
+      packages.prod.push('jade');
+    } else if (this.answers.type == "Cordova") {
+      packages.dev.push('cordova-lib');
+    }
     return packages;
+    // Cordova
+
   },
   _getNpmConfig: function() {
     return {
@@ -262,6 +278,11 @@ module.exports = generators.Base.extend({
     this.fs.copyTpl(this.templatePath("web/server/index.jsx"), this.destinationPath("./lib/server/index.js"));
   },
 
+  _initCordova: function() {
+    spawn.sync('cordova', ['create', this.answers.name, this.answers.cordovaPackage, this.answers.cordovaDisplayText]);
+    this.destinationRoot(this.destinationPath(this.answers.name));
+    spawn.sync('cordova', ['platform', "add", "browser", "--usegit"]);
+  },
   _writeCordovaSpecific: function() {
     this.fs.copyTpl(this.templatePath("cordova/index.html"), this.destinationPath("./lib/index.html"));
   },
@@ -288,6 +309,8 @@ module.exports = generators.Base.extend({
 
   },
   writing: function() {
+    if (this.answers.type == "Cordova")
+      this._initCordova();
     this._initGit();
     this._initNpm();
     if (this.answers.bower)
