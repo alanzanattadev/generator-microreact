@@ -42,6 +42,8 @@ var paths = {
   css: 'style.css',
   assets: 'lib/assets/**/*',
   views: 'lib/**/*.jade',
+  packageJson: 'package.json',
+  bowerJson: 'bower.json'
 };
 
 // -----------------------
@@ -86,6 +88,24 @@ function getBuildSystem(name) {
 gulp.task('browserify:watch', getBuildSystem("watch"));
 
 gulp.task('browserify:build', getBuildSystem("simple"));
+
+gulp.task('server-npm:build', function() {
+  gulp.src(paths.packageJson)
+    .pipe(gulp.dest(paths.build));
+});
+
+gulp.task('server-npm:watch', function() {
+  gulp.watch(paths.packageJson, ['server-npm:build']);
+});
+
+gulp.task('server-bower:build', function() {
+  gulp.src(paths.bowerJson)
+    .pipe(gulp.dest(paths.build));
+});
+
+gulp.task('server-bower:watch', function() {
+  gulp.watch(paths.bowerJson, ['server-bower:build']);
+});
 
 gulp.task('server:build', function() {
   gulp.src(paths.js)
@@ -190,7 +210,7 @@ gulp.task('test:watch', function() {
 
 gulp.task('help', taskListing);
 gulp.task('demo', ['browsersync']);
-gulp.task('build', ["browserify:build", "server:build", "sass", "html", "assets:build", "views:build"]);
-gulp.task('watch:build', ['html:watch', 'sass:watch', 'assets:watch', 'browserify:watch', 'server:watch', "views:watch"]);
+gulp.task('build', ["browserify:build", "server:build", "server-npm:build", "server-bower:build", "sass", "html", "assets:build", "views:build"]);
+gulp.task('watch:build', ['html:watch', 'sass:watch', 'assets:watch', 'browserify:watch', 'server:watch', "server-npm:watch", "server-bower:watch", "views:watch"]);
 gulp.task('watch', ['watch:build', 'browsersync']);
 gulp.task('default', ['build', 'test', 'watch']);

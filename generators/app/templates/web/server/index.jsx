@@ -11,6 +11,7 @@ var app = express();
 app.set('view engine', 'jade');
 app.set('views', './views');
 app.use(express.static('public'));
+app.use(express.static('bower_components'));
 
 app.use(function(req, res, next) {
   var router = Router.create({location: req.url, routes: routes});

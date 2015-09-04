@@ -144,7 +144,7 @@ module.exports = generators.Base.extend({
       main: "server.js",
       scripts: {
         test: "gulp test",
-        start: 'gulp watch'
+        start: this.answers.type == "Web" ? 'node server/index.js' : 'gulp watch'
       }
     };
   },
@@ -274,6 +274,8 @@ module.exports = generators.Base.extend({
   _writeWebSpecific: function() {
     fs.mkdirSync(this.destinationPath("./lib/server"));
     fs.mkdirSync(this.destinationPath("./lib/views"));
+    this.fs.copyTpl(this.templatePath("web/Vagrantfile"), this.destinationPath("./Vagrantfile"));
+    this.fs.copyTpl(this.templatePath("web/Dockerfile"), this.destinationPath("./Dockerfile"));
     this.fs.copyTpl(this.templatePath("web/views/index.jade"), this.destinationPath("./lib/views/index.jade"));
     this.fs.copyTpl(this.templatePath("web/server/index.jsx"), this.destinationPath("./lib/server/index.js"));
   },
